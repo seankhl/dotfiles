@@ -1,0 +1,516 @@
+"" source a global configuration file if available
+"if filereadable("/etc/vim/vimrc")
+"  source /etc/vim/vimrc
+"endif
+
+set encoding=utf-8
+scriptencoding utf-8
+
+
+"""" plugins with vim-plug
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+if empty(glob('~/.vim/autoload/plug.vim'))
+  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
+call plug#begin('~/.vim/plugged')
+" completion
+Plug 'ncm2/ncm2'
+Plug 'roxma/nvim-yarp'
+Plug 'roxma/vim-hug-neovim-rpc'
+Plug 'ncm2/ncm2-gtags'
+Plug 'ncm2/ncm2-path'
+" languages
+Plug 'lervag/vimtex', {'for': 'tex'}
+Plug 'KeitaNakamura/tex-conceal.vim', {'for': 'tex'}
+Plug 'plasticboy/vim-markdown'
+Plug 'Vimjas/vim-python-pep8-indent'
+Plug 'chrisbra/csv.vim'             
+" junegunn
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/vim-easy-align'      " align text by character
+Plug 'junegunn/goyo.vim'            " distraction-free editing
+Plug 'junegunn/limelight.vim'       " distraction-free editing
+" movement, syntax, other niceties
+Plug 'mhinz/vim-signify'                                  " git diff
+Plug 'justinmk/vim-sneak'                                 " 2-letter movement
+Plug 'tpope/vim-obsession'                                " session management
+Plug 'tpope/vim-sleuth'                                   " auto tab settings
+Plug 'tpope/vim-commentary'                               " comment text object
+Plug 'michaeljsmith/vim-indent-object'                    " ai, ii, aI, iI
+Plug 'pgdouyon/vim-evanesco'                              " search tweaks
+Plug 'chrisbra/Recover.vim'                               " recovery tweaks ([D])
+Plug 'mtth/scratch.vim'                                   " scratch files
+Plug 'moll/vim-bbye'                                      " Bdelete & Bwipeout
+Plug 'RRethy/vim-hexokinase', { 'do': 'make hexokinase' } " color display
+Plug 'skywind3000/asyncrun.vim'                           " async exec of cmds
+call plug#end()
+
+
+"""" basic options
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+"" colorscheme settings
+set t_Co=256
+if has('termguicolors')
+    set termguicolors
+    let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+    let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+endif
+syntax on
+let g:nofrils_strbackgrounds=1
+let g:nofrils_heavycomments=1
+let g:nofrils_heavylinenumbers=0
+let daynight = system('redshift -p | grep Night')
+" italic comments are nice
+augroup HiCustom
+    autocmd!
+    autocmd ColorScheme *
+        \ hi Comment cterm=italic
+augroup END
+if v:shell_error
+    colorscheme nofrils-light
+    highlight Normal  ctermbg=black guibg=#F0F5FF
+    highlight NonText ctermbg=black guibg=#F0F5FF
+else
+    colorscheme nofrils-darknew
+    highlight Normal  ctermbg=black guibg=#1F1D0F
+    highlight Normal  ctermbg=black guibg=#191625
+    highlight NonText ctermbg=black guibg=#140F22
+    highlight NonText ctermbg=black guibg=#191625
+endif
+" deal with italics correctly in tmux
+let &t_ZH = "\<Esc>[3m"
+let &t_ZR = "\<Esc>[23m"
+" cursors
+if exists('$TMUX')
+  let &t_SI = "\<Esc>Ptmux;\<Esc>\e[6 q\<Esc>\\"
+  let &t_SR = "\<Esc>Ptmux;\<Esc>\e[4 q\<Esc>\\"
+  let &t_EI = "\<Esc>Ptmux;\<Esc>\e[1 q\<Esc>\\"
+else
+  let &t_SI = "\<Esc>[6 q"
+  let &t_SR = "\<Esc>[4 q"
+  let &t_EI = "\<Esc>[1 q"
+endif
+
+
+"" basic vim stuff for a more usable environment
+set nocompatible
+set fileformat=unix
+silent! set cryptmethod=blowfish2
+
+
+"" some visual settings for tweaking different parts of the UI
+set autoread
+set diffopt=filler,vertical,indent-heuristic
+if has("patch-8.1.0360")
+    set diffopt+=internal,algorithm:patience
+endif
+set number
+set laststatus=1
+set lazyredraw
+set listchars=eol:¬,tab:→\ ,space:·,trail:◌,extends:»,precedes:«,nbsp:·
+set modeline
+set modelines=1
+set ruler
+set showcmd
+set wildmenu
+set wildmode=longest:full,full
+" ignore these filenames during enhanced command line completion
+set wildignore+=*.aux,*.out,*.toc  " LaTeX intermediate files
+set wildignore+=*.jpg,*.bmp,*.gif  " binary images
+set wildignore+=*.o,*.obj,*.exe,*.dll,*.manifest  " compiled object files
+set wildignore+=*.luac,*.pyc,*.hi  " Lua, Python, Haskell byte code
+set wildignore+=*.spl  " compiled spelling word lists
+set wildignore+=*.sw?  " Vim swap files
+set wildignore+=.git,*.rbc,*.rbo,*.class,.svn,*.gem  " Git/Ruby/Java/SVN
+set wildignore+=*.zip,*.tar.gz,*.tar.bz2,*.rar,*.tar.xz  " compressed files
+set wildignore+=*~,._*  " common hidden file extensions
+" junegunn has the cutest options ever; show softbreaks as a nice char
+if has('patch-7.4.338')
+"  let &showbreak = '» '
+  let &showbreak = '↳ '
+  set breakindent
+  set breakindentopt=sbr
+endif
+" when opening file, restore cursor to last location it was in
+if has('autocmd')
+  au BufReadPost *
+    \ if line("'\"") > 1 && line("'\"") <= line("$") |
+    \   exe "normal! g'\"" |
+    \ endif
+endif
+
+
+"" typing and cursor movement settings
+set mouse=a
+set ttymouse=sgr
+set backspace=indent,eol,start
+set linebreak
+set breakat="	 "
+let mapleader = ";"
+set scrolloff=2
+set textwidth=100
+set timeoutlen=500
+set ttimeout
+set ttimeoutlen=100
+set virtualedit=block
+" Do not use arrow keys or directions to delete text, it's too scary
+nnoremap c<up> <nop>
+nnoremap c<down> <nop>
+nnoremap c<left> <nop>
+nnoremap c<right> <nop>
+nnoremap ck <nop>
+nnoremap cj <nop>
+nnoremap ch <nop>
+nnoremap cl <nop>
+nnoremap d<up> <nop>
+nnoremap d<down> <nop>
+nnoremap d<left> <nop>
+nnoremap d<right> <nop>
+nnoremap dk <nop>
+nnoremap dj <nop>
+nnoremap dh <nop>
+nnoremap dl <nop>
+" better pane/tab navigation
+nnoremap gh <c-w><c-h>
+nnoremap gj <c-w><c-j>
+nnoremap gk <c-w><c-k>
+nnoremap gl <c-w><c-l>
+nnoremap g. gt
+nnoremap g, gT
+" I don't use it, but it's obviously the right thing to do
+nnoremap Y y$
+" tcq is the default it seems, b is like l but a bit more aggressive
+set formatoptions=tcroqb
+if has('patch-7.3.541')
+  set formatoptions+=j
+endif
+set nojoinspaces
+" fix meta keybindings
+let c='a'
+while c <= 'z'
+  exec "set <A-".c.">=\e".c
+  exec "imap \e".c." <A-".c.">"
+  let c = nr2char(1+char2nr(c))
+endw
+
+
+"" indentation and syntax settings
+set autoindent
+if has('autocmd')
+  filetype plugin indent on
+endif
+" C/C++ indentation options
+" +0 means don't indent continuation lines
+" (0 means indent linebreaks after open parens sanely
+" N-s means don't indent namespaces
+" g0 means don't indent private/public/protected
+" :0 means don't indent case labels
+" l1 means align with case labels, not trailing char on case line
+" L0 means don't move labels to column 1; mucks with ::
+set cinoptions=+0,(0,N-s,g0,:0,l1,L0
+
+
+"" default tab settings, overridden by plugin to try to autodetect
+set expandtab
+set tabstop=4
+set softtabstop=4
+set shiftwidth=4
+" override some tab settings for specific tiletypes
+autocmd FileType html,css,javascript setlocal ts=2 sts=2 sw=2
+autocmd FileType go setlocal noet ci pi ts=8 sts=0 sw=8
+autocmd BufNewFile,BufReadPost *.mksh set filetype=sh
+
+
+"" search settings; these are configured by vim-evanesco I think (enabled)
+set incsearch
+set showmatch
+set ignorecase
+set smartcase
+
+
+"" put annoying temporary files into ~/.vim/tmp dir, not working dir (junegunn)
+set viminfo+=n~/.vim/tmp/viminfo
+set backupdir=~/.vim/tmp//,.
+set directory=~/.vim/tmp//,.
+if v:version >= 703
+  set undodir=~/.vim/tmp//,.
+endif
+
+
+"""" additional handy but noncritical stuff
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+"" sudo save with W or w!!, sudo save+quit with Wq or x!!
+command! W  :execute ':silent w !sudo tee > /dev/null %' | :edit!
+command! Wq :execute ':W' | :q
+ca w!! W
+ca x!! Wq
+
+
+"" make life easier when forgetting to use clipboard register 
+command! Toclip :execute ':let @+ = getreg(''"'')'
+command! Frclip :execute ':let @" = getreg(''+'')'
+" from https://stackoverflow.com/a/48959734
+if executable("xclip")
+  function! PreserveClipboard()
+    call system("xclip -i -sel c", getreg('+'))
+  endfunction
+  function! PreserveClipboadAndSuspend()
+    call PreserveClipboard()
+    suspend
+  endfunction
+  command! PreserveClipboard call PreserveClipboard()
+  autocmd VimLeave * call PreserveClipboard()
+  nnoremap <silent> <c-z> :call PreserveClipboadAndSuspend()<cr>
+  vnoremap <silent> <c-z> :<c-u>call PreserveClipboadAndSuspend()<cr>
+endif
+
+
+"" use :TrimWhitespace to trim tabs/spaces at ends of lines
+fun! TrimWhitespace()
+    let l:save_cursor = getpos('.')
+    %s/\s\+$//e
+    call setpos('.', l:save_cursor)
+endfun
+command! TrimWhitespace call TrimWhitespace()
+
+
+"" gi & gpi commands: go to next/previous indentation level (junegunn)
+function! s:indent_len(str)
+  return type(a:str) == 1 ? len(matchstr(a:str, '^\s*')) : 0
+endfunction
+function! s:go_indent(times, dir)
+    for _ in range(a:times)
+        let l = line('.')
+        let x = line('$')
+        let i = s:indent_len(getline(l))
+        let e = empty(getline(l))
+        while l >= 1 && l <= x
+            let line = getline(l + a:dir)
+            let l += a:dir
+            if s:indent_len(line) != i || empty(line) != e
+                break
+            endif
+        endwhile
+        let l = min([max([1, l]), x])
+        execute 'normal! '. l .'G^'
+    endfor
+endfunction
+nnoremap <silent> gi :<c-u>call <SID>go_indent(v:count1, 1)<cr>
+nnoremap <silent> gpi :<c-u>call <SID>go_indent(v:count1, -1)<cr>
+
+
+"" use ctrl-j and ctrl-k to move screen up/down while keeping cursor fixed
+fun! ShiftScreen(dir)
+    let curline=line('.')
+    exec 'normal! M'
+    let midline=line('.')
+    let shiftlines=float2nr(curline-midline)
+    if shiftlines<0
+        let mot='k'
+        let shiftlines=-shiftlines
+    elseif shiftlines>0
+        let mot='j'
+    else
+        let mot=''
+    endif
+    if has('float') && type(shiftlines)==type(0.0)
+        let shiftlines=float2nr(shiftlines)
+    endif
+    exec 'normal! '.a:dir.'zz'.shiftlines.mot
+endfun
+nnoremap <c-j> :call ShiftScreen('j')<cr>
+nnoremap <c-k> :call ShiftScreen('k')<cr>
+
+
+"" I forget, something with async plugin for compiling/running from within vim
+command! -nargs=* Async let job = job_start(<q-args>)
+
+
+"" Load matchit.vim, but only if the user hasn't installed a newer version
+if !exists('g:loaded_matchit') && findfile('plugin/matchit.vim', &rtp) ==# ''
+  runtime! macros/matchit.vim
+endif
+
+
+"""" config for plugins
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+"" ncm2
+set shortmess+=c
+au User Ncm2PopupOpen set completeopt=noinsert,menuone,preview
+au User Ncm2PopupClose set completeopt=menu,preview
+let g:ncm2#auto_popup = 0
+imap <silent><expr> <C-\>t
+            \ pumvisible() ?  "\<C-n>" : "\<Plug>(ncm2_manual_trigger)"
+"autocmd FileType c,cpp nnoremap <buffer> gd :<c-u>call ncm2_pyclang#goto_declaration()<cr>
+"let $GTAGSCONF='/home/sean/.local/share/gtags/gtags.conf'
+"let $GTAGSLABEL='pygments'
+
+
+"" markdown files will do proper syntax highlighting in tex math snippets now
+function! MarkdownPlusMathJax()
+    syn region mathblk start=/\v\$\$/ end=/\v\$\$/
+    syn region mathinl start=/\v\\\\\(/ end=/\v\\\\\)/
+    hi link mathblk Special
+    hi link mathinl Special
+endfunction
+autocmd BufNewFile,BufReadPost *.md call MarkdownPlusMathJax()
+let g:markdown_fenced_languages = ['html', 'python', 'cpp', 'javascript']
+autocmd Filetype markdown set nofoldenable
+let g:vim_markdown_folding_disabled = 1
+
+
+"" vim-sneak
+" replace 'f' with 1-char sneak
+nmap f <Plug>Sneak_f
+nmap F <Plug>Sneak_F
+xmap f <Plug>Sneak_f
+xmap F <Plug>Sneak_F
+omap f <Plug>Sneak_f
+omap F <Plug>Sneak_F
+" replace 't' with 1-char sneak
+nmap t <Plug>Sneak_t
+nmap T <Plug>Sneak_T
+xmap t <Plug>Sneak_t
+xmap T <Plug>Sneak_T
+omap t <Plug>Sneak_t
+omap T <Plug>Sneak_T
+let g:sneak#s_next = 1
+let g:sneak#streak = 1
+hi link SneakPluginTarget   Search
+hi link SneakPluginScope    Comment
+hi link SneakStreakTarget   Search
+hi link SneakStreakMask     IncSearch
+autocmd ColorScheme * hi Sneak      cterm=bold guifg=#BFFFAF guibg=#000000
+autocmd ColorScheme * hi SneakScope cterm=bold guifg=#BFFFAF guibg=#000000
+autocmd ColorScheme * hi SneakLabel cterm=bold guifg=#302087 guibg=#FFFFFF
+
+
+"" Goyo
+function! s:goyo_enter()
+  if exists('$TMUX')
+    silent !tmux set status off
+  endif
+  Limelight
+endfunction
+function! s:goyo_leave()
+  if exists('$TMUX')
+    silent !tmux set status on
+  endif
+  Limelight!
+endfunction
+autocmd! User GoyoEnter nested call <SID>goyo_enter()
+autocmd! User GoyoLeave nested call <SID>goyo_leave()
+let g:limelight_conceal_ctermfg = '00'
+
+
+"" vimtex
+let g:vimtex_compiler_latexmk = {'callback' : 0}
+let g:vimtex_quickfix_mode=0
+set conceallevel=2
+let g:tex_conceal='abdgm'
+
+
+"" csv
+let g:csv_no_conceal = 1
+let g:csv_disable_fdt = 1
+"hi CSVColumnEven ctermfg=6 ctermbg=8
+"hi CSVColumnOdd  ctermfg=3
+"hi CSVColumnHeaderEven cterm=bold ctermfg=103 ctermbg=NONE guifg=bg guibg=#00CDCD
+"hi CSVColumnHeaderOdd  cterm=bold ctermfg=103 ctermbg=NONE guifg=bg guibg=#00CDCD
+
+
+"" signify
+let g:signify_vcs_list = [ 'git' ]
+let g:signify_disable_by_default = 1
+
+
+"" hexokinase
+let g:Hexokinase_highlighters = [ 'background' ]
+
+
+"" asyncrun
+let g:asyncrun_open = 8
+noremap <F9> :call asyncrun#quickfix_toggle(8)<cr>
+function! s:Error(msg)
+    echohl WarningMsg |
+                \ echomsg 'Error: ' . a:msg |
+                \ echohl None
+endfunction
+function! s:RunGlobal(flagstr, termstr)
+    let l:cmdstr = '/usr/bin/global -' . a:flagstr . ' --result=ctags-mod "' . a:termstr . '"'
+    let l:result = system(l:cmdstr)
+    if v:shell_error != 0
+        call s:Error('gtags command error.')
+        return
+    endif
+   if l:result == ''
+       call s:Error('gtags term not found.')
+       return
+   endif
+   let l:efm_org = &efm
+   let &efm = "%f\t%l\t%m"
+   cexpr! l:result
+   let &efm = l:efm_org
+endfunction
+function! s:RunGlobalJump(flagstr, termstr)
+    let l:cmdstr = '/usr/bin/global -' . a:flagstr . ' --result=ctags-mod "' . a:termstr . '"'
+    let l:result = system(l:cmdstr)
+    if v:shell_error != 0
+        call s:Error('gtags command error.')
+        return
+    endif
+   if l:result == ''
+       call s:Error('gtags term not found.')
+       return
+   endif
+   let l:efm_org = &efm
+   let &efm = "%f\t%l\t%m"
+   cexpr! l:result
+   let &efm = l:efm_org
+   execute ':cc'
+   execute ':colder'
+endfunction
+function! s:RunGlobalAsync(arg1, ...)
+    let l:arg2 = get(a:, 1, 0)
+    if l:arg2 != '0'
+        let l:flagstr = '-' . a:arg1
+        let l:termstr = l:arg2
+    else
+        let l:flagstr =  '--from-here="' . line('.') . ':' . expand('%') . '"'
+        let l:termstr = a:arg1
+    endif
+    let l:efm_org = &efm
+    let &efm = "%f\t%l\t%m"
+    execute ':AsyncRun -strip /usr/bin/global ' . l:flagstr . ' --result=ctags-mod "' . l:termstr . '"'
+    let &efm = l:efm_org
+endfunction
+command! -nargs=*   Gtags       call s:RunGlobalAsync(<f-args>)
+command! -nargs=*   GtagsJump   call s:RunGlobalJump(<f-args>)
+nnoremap <expr>     <c-]>       ':GtagsJump d '.expand('<cword>').'<cr>'
+inoremap <expr>     <c-]>       '<esc>:GtagsJump d '.expand('<cword>').'<cr>i'
+
+if has('conceal')
+  if &termencoding ==# "utf-8" || &encoding ==# "utf-8"
+    let s:checkbox_unchecked = "\u2717"
+    let s:checkbox_checked = "\u2713"
+  else
+    let s:checkbox_unchecked = 'o'
+    let s:checkbox_checked = 'x'
+  endif
+  syntax match markdownCheckbox "^\s*\([-\*] \[[ x]\]\|--\|++\) " contains=markdownCheckboxChecked,markdownCheckboxUnchecked
+  execute 'syntax match markdownCheckboxUnchecked "\([-\*] \[ \]\|--\)" contained conceal cchar='.s:checkbox_unchecked
+  execute 'syntax match markdownCheckboxChecked "\([-\*] \[x\]\|++\)" contained conceal cchar='.s:checkbox_checked
+endif
+
+"""" security of config
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+set exrc
+set secure
+

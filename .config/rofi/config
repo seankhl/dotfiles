@@ -1,0 +1,10 @@
+rofi.theme: Arc-Dark2
+rofi.combi-modi: window,drun,ssh
+rofi.modi: combi,run
+rofi.combi-hide-mode-prefix: false
+rofi.display-combi:
+rofi.display-drun:
+rofi.display-run:
+rofi.display-window:
+rofi.matching: fuzzy
+rofi.sorting-method: fzf
