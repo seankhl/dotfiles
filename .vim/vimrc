@@ -71,11 +71,11 @@ augroup HiCustom
         \ hi Comment cterm=italic
 augroup END
 if v:shell_error
-    colorscheme nofrils-light
+    colorscheme nofrils-day
     highlight Normal  ctermbg=black guibg=#F0F5FF
     highlight NonText ctermbg=black guibg=#F0F5FF
 else
-    colorscheme nofrils-darknew
+    colorscheme nofrils-night
     highlight Normal  ctermbg=black guibg=#1F1D0F
     highlight Normal  ctermbg=black guibg=#191625
     highlight NonText ctermbg=black guibg=#140F22
