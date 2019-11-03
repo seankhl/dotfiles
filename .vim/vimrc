@@ -25,9 +25,9 @@ Plug 'ncm2/ncm2-path'
 " languages
 Plug 'lervag/vimtex', {'for': 'tex'}
 Plug 'KeitaNakamura/tex-conceal.vim', {'for': 'tex'}
-Plug 'plasticboy/vim-markdown'
-Plug 'Vimjas/vim-python-pep8-indent'
-Plug 'chrisbra/csv.vim'             
+Plug 'plasticboy/vim-markdown', {'for': 'markdown'}
+Plug 'Vimjas/vim-python-pep8-indent', {'for': 'python'}
+Plug 'chrisbra/csv.vim', {'for': 'csv'}
 " junegunn
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/vim-easy-align'      " align text by character
@@ -72,14 +72,8 @@ augroup HiCustom
 augroup END
 if v:shell_error
     colorscheme nofrils-day
-    highlight Normal  ctermbg=black guibg=#F0F5FF
-    highlight NonText ctermbg=black guibg=#F0F5FF
 else
     colorscheme nofrils-night
-    highlight Normal  ctermbg=black guibg=#1F1D0F
-    highlight Normal  ctermbg=black guibg=#191625
-    highlight NonText ctermbg=black guibg=#140F22
-    highlight NonText ctermbg=black guibg=#191625
 endif
 " deal with italics correctly in tmux
 let &t_ZH = "\<Esc>[3m"
@@ -108,6 +102,7 @@ set diffopt=filler,vertical,indent-heuristic
 if has("patch-8.1.0360")
     set diffopt+=internal,algorithm:patience
 endif
+set fillchars=vert:│
 set number
 set laststatus=1
 set lazyredraw
@@ -417,12 +412,12 @@ let g:tex_conceal='abdgm'
 
 
 "" csv
-let g:csv_no_conceal = 1
 let g:csv_disable_fdt = 1
-"hi CSVColumnEven ctermfg=6 ctermbg=8
-"hi CSVColumnOdd  ctermfg=3
-"hi CSVColumnHeaderEven cterm=bold ctermfg=103 ctermbg=NONE guifg=bg guibg=#00CDCD
-"hi CSVColumnHeaderOdd  cterm=bold ctermfg=103 ctermbg=NONE guifg=bg guibg=#00CDCD
+hi link CSVColumnEven Normal
+hi link CSVColumnOdd Folded
+hi link CSVDelimiter Folded
+hi link CSVColumnHeaderEven PreProc
+hi link CSVColumnHeaderOdd  PreProc
 
 
 "" signify
@@ -507,6 +502,24 @@ if has('conceal')
   execute 'syntax match markdownCheckboxUnchecked "\([-\*] \[ \]\|--\)" contained conceal cchar='.s:checkbox_unchecked
   execute 'syntax match markdownCheckboxChecked "\([-\*] \[x\]\|++\)" contained conceal cchar='.s:checkbox_checked
 endif
+
+
+"" fzf
+let g:fzf_colors =
+\ { 'fg':      ['fg', 'Normal'],
+  \ 'bg':      ['bg', 'Normal'],
+  \ 'hl':      ['fg', 'Comment'],
+  \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
+  \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
+  \ 'hl+':     ['fg', 'Normal', 'CursorColumn', 'Normal'],
+  \ 'info':    ['fg', 'PreProc'],
+  \ 'border':  ['fg', 'Ignore'],
+  \ 'prompt':  ['fg', 'Normal', 'Normal', 'Normal'],
+  \ 'pointer': ['fg', 'ModeMsg'],
+  \ 'marker':  ['fg', 'Keyword'],
+  \ 'spinner': ['fg', 'Label'],
+  \ 'header':  ['fg', 'Comment'] }
+
 
 """" security of config
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

@@ -1,4 +1,4 @@
-" Name: No Frils Light Colorscheme
+" Name: No Frils Night Colorscheme
 " Author: robertmeta (on Github)
 " URL: https://github.com/robertmeta/nofrils
 " (see this url for latest release & screenshots)
@@ -9,7 +9,7 @@ if exists("syntax_on")
     syntax reset
 endif
 
-let g:colors_name = "nofrils-light"
+let g:colors_name = "nofrils-night"
 
 if !exists("g:nofrils_strbackgrounds")
     let g:nofrils_strbackgrounds = 0
@@ -45,7 +45,7 @@ function! s:higui(group, guifg, guibg, attr)
 endfunction
 
 let s:guiwhite = "#000000"
-let s:guibackg = "#140F22"
+let s:guibackg = "#191625"
 let s:guiforeg = "#F4F8FF"
 let s:guigrey1 = "#787C8F"
 let s:guigrey2 = "#2F2F2F"
@@ -134,7 +134,7 @@ call s:higui("Tooltip",     "NONE", "NONE", "NONE")
 " Syntax Highlighting (or lack thereof)
 call s:higui("Boolean",        "NONE", "NONE", "NONE")
 call s:higui("Character",      "NONE", "NONE", "NONE")
-call s:higui("Conceal",        s:guishade, "NONE", "NONE")
+call s:higui("Conceal",        "NONE", "NONE", "NONE")
 call s:higui("Conditional",    "NONE", "NONE", "NONE")
 call s:higui("Constant",       "NONE", "NONE", "NONE")
 call s:higui("Debug",          "NONE", "NONE", "NONE")
