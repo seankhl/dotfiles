@@ -5,7 +5,7 @@
  *
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
-static char font[] = "M+ 1mn Patched:pixelsize=14.5:antialias=true:autohint=false";
+static char font[] = "M+ 1mn Patched:pixelsize=15:antialias=true:autohint=false";
 static int borderpx = 1;
 
 /*
@@ -25,7 +25,7 @@ char *vtiden = "\033[?6c";
 
 /* Kerning / character bounding-box multipliers */
 static float cwscale = 1.0;
-static float chscale = 0.85;
+static float chscale = 0.95;
 
 /*
  * word delimiter string
@@ -89,50 +89,29 @@ unsigned int alpha = 0xff;
 static const char *colorname[] = {
 	/* 8 normal colors */
 	"#000000",
-    "#DF786F",
-    "#70A16C",
-    "#DFC76F",
-	"#6F78DF",
-    "#A76FA7",
-	"#5BC4BF",
+	"#DF786F", /* red     */
+	"#70A16C", /* green   */
+	"#DFC76F", /* yellow  */
+	"#6F78DF", /* blue    */
+	"#A76FA7", /* magenta */
+	"#5BC4BF", /* cyan    */
 	"#585858",
 
 	/* 8 bright colors */
 	"#A8AFB8",
-    "#FB9FB1",
-    "#BFFFAF",
-    "#EFEAAF",
-    "#AFB6EF",
-    "#EFAFEF",
-    "#9FFFEF",
+	"#FB9FB1", /* red     */
+	"#BFFFAF", /* green   */
+	"#EFEAAF", /* yellow  */
+	"#AFB6EF", /* blue    */
+	"#EFAFEF", /* magenta */
+	"#9FFFEF", /* cyan    */
 	"#FFFFFF",
-
-    /* unused */
-    "#DF5F6F",
-	"#CFDFAF",
-    "#DFDFAF",
-	"#8FAFEF",
-    "#DF78CF",
-	"#AFCFDF",
 
 	[255] = 0,
 
 	/* more colors can be added after 255 to use with DefaultXX */
-	"#080808",
-	"#eeeeee",
-	"#080808",
-	"#ffffd7",
-	"#080808",
-	"#ffefd6",
-	"#eeeeee",
-	"#262626",
-    "#000000",
-    "#F0F5FF",
-	"#F4F8FF",
-	"#191625",
-	"#161224",
-	"#5c5cff",
-	"#BFFFAF"
+	"#F0F5FF", /* fg */
+	"#191625"  /* bg */
 };
 
 
@@ -140,22 +119,10 @@ static const char *colorname[] = {
  * Default colors (colorname index)
  * foreground, background, cursor, reverse cursor
  */
-unsigned int defaultfg = 266;
-unsigned int defaultbg = 267; 
-static unsigned int defaultcs = 266;
-static unsigned int defaultrcs = 267;
-//unsigned int defaultfg = 258;
-//unsigned int defaultbg = 259;
-//static unsigned int defaultcs = 258;
-//static unsigned int defaultrcs = 259;
-//unsigned int defaultfg = 260;
-//unsigned int defaultbg = 261;
-//static unsigned int defaultcs = 260;
-//static unsigned int defaultrcs = 261;
-//unsigned int defaultfg = 262;
-//unsigned int defaultbg = 263;
-//static unsigned int defaultcs = 262;
-//static unsigned int defaultrcs = 263;
+unsigned int defaultfg = 256;
+unsigned int defaultbg = 257;
+static unsigned int defaultcs = 256;
+static unsigned int defaultrcs = 257;
 
 /*
  * Default shape of cursor

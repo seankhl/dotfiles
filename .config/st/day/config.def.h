@@ -5,7 +5,7 @@
  *
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
-static char font[] = "IBM Plex Mono:size=10.5:antialias=true:autohint=false";
+static char font[] = "IBM Plex Mono:pixelsize=15:antialias=true:autohint=false";
 static int borderpx = 1;
 
 /*
@@ -25,7 +25,7 @@ char *vtiden = "\033[?6c";
 
 /* Kerning / character bounding-box multipliers */
 static float cwscale = 1.0;
-static float chscale = 0.85;
+static float chscale = 0.95;
 
 /*
  * word delimiter string
@@ -87,23 +87,22 @@ unsigned int alpha = 0xff;
 
 /* Terminal colors (16 first used in escape sequence) */
 static const char *colorname[] = {
-  /* 8 normal colors */
 	/* 8 normal colors */
 	"#FFFFFF",
-	"#6a111a", /* red     */
-	"#42543f", /* green   */
-	"#4c3f35", /* yellow  */
-	"#0d3d60", /* blue    */
+	"#6A111A", /* red     */
+	"#42543F", /* green   */
+	"#4C3F35", /* yellow  */
+	"#0D3D60", /* blue    */
 	"#312336", /* magenta */
 	"#196262", /* cyan    */
 	"#585858",
 
 	/* 8 bright colors */
 	"#A8AFB8",
-	"#6a111a", /* red     */
-	"#42543f", /* green   */
-	"#4c3f35", /* yellow  */
-	"#0d3d60", /* blue    */
+	"#6A111A", /* red     */
+	"#42543F", /* green   */
+	"#4C3F35", /* yellow  */
+	"#0D3D60", /* blue    */
 	"#312336", /* magenta */
 	"#196262", /* cyan    */
 	"#000000",
@@ -111,21 +110,8 @@ static const char *colorname[] = {
 	[255] = 0,
 
 	/* more colors can be added after 255 to use with DefaultXX */
-	"#080808",
-	"#eeeeee",
-	"#080808",
-	"#ffffd7",
-	"#080808",
-	"#ffefd6",
-	"#eeeeee",
-	"#262626",
-    "#000000",
-    "#F0F5FF",
-	"#F4F8FF",
-	"#191625",
-	"#161224",
-	"#5c5cff",
-	"#BFFFAF"
+	"#000000", /* fg */
+	"#F0F5FF"  /* bg */
 };
 
 
@@ -133,22 +119,10 @@ static const char *colorname[] = {
  * Default colors (colorname index)
  * foreground, background, cursor, reverse cursor
  */
-//unsigned int defaultfg = 266;
-//unsigned int defaultbg = 267; 
-//static unsigned int defaultcs = 266;
-//static unsigned int defaultrcs = 267;
-//unsigned int defaultfg = 258;
-//unsigned int defaultbg = 259;
-//static unsigned int defaultcs = 258;
-//static unsigned int defaultrcs = 259;
-//unsigned int defaultfg = 260;
-//unsigned int defaultbg = 261;
-//static unsigned int defaultcs = 260;
-//static unsigned int defaultrcs = 261;
-unsigned int defaultfg = 264;
-unsigned int defaultbg = 265;
-static unsigned int defaultcs = 264;
-static unsigned int defaultrcs = 265;
+unsigned int defaultfg = 256;
+unsigned int defaultbg = 257;
+static unsigned int defaultcs = 256;
+static unsigned int defaultrcs = 257;
 
 /*
  * Default shape of cursor
