@@ -3,6 +3,10 @@
 "  source /etc/vim/vimrc
 "endif
 
+
+"" basic vim stuff for a more usable environment
+set nocompatible
+set fileformat=unix
 set encoding=utf-8
 scriptencoding utf-8
 
@@ -88,12 +92,6 @@ else
   let &t_SR = "\<Esc>[4 q"
   let &t_EI = "\<Esc>[1 q"
 endif
-
-
-"" basic vim stuff for a more usable environment
-set nocompatible
-set fileformat=unix
-silent! set cryptmethod=blowfish2
 
 
 "" some visual settings for tweaking different parts of the UI
@@ -191,6 +189,13 @@ while c <= 'z'
   exec "imap \e".c." <A-".c.">"
   let c = nr2char(1+char2nr(c))
 endw
+" enable bracketed paste for st and tmux
+if &term =~ '^st' || &term =~ '^tmux'
+  let &t_BE="\<Esc>[?2004h"
+  let &t_BD="\<Esc>[?2004l"
+  let &t_PS="\<Esc>[200~"
+  let &t_PE="\<Esc>[201~"
+endif
 
 
 "" indentation and syntax settings
@@ -232,6 +237,7 @@ set viminfo+=n~/.vim/tmp/viminfo
 set backupdir=~/.vim/tmp//,.
 set directory=~/.vim/tmp//,.
 if v:version >= 703
+  set undofile
   set undodir=~/.vim/tmp//,.
 endif
 
@@ -246,23 +252,9 @@ ca w!! W
 ca x!! Wq
 
 
-"" make life easier when forgetting to use clipboard register 
+"" make life easier when forgetting to use clipboard register
 command! Toclip :execute ':let @+ = getreg(''"'')'
 command! Frclip :execute ':let @" = getreg(''+'')'
-" from https://stackoverflow.com/a/48959734
-if executable("xclip")
-  function! PreserveClipboard()
-    call system("xclip -i -sel c", getreg('+'))
-  endfunction
-  function! PreserveClipboadAndSuspend()
-    call PreserveClipboard()
-    suspend
-  endfunction
-  command! PreserveClipboard call PreserveClipboard()
-  autocmd VimLeave * call PreserveClipboard()
-  nnoremap <silent> <c-z> :call PreserveClipboadAndSuspend()<cr>
-  vnoremap <silent> <c-z> :<c-u>call PreserveClipboadAndSuspend()<cr>
-endif
 
 
 "" use :TrimWhitespace to trim tabs/spaces at ends of lines
@@ -347,7 +339,8 @@ imap <silent><expr> <C-\>t
 "let $GTAGSLABEL='pygments'
 
 
-"" markdown files will do proper syntax highlighting in tex math snippets now
+"" markdown
+" do proper syntax highlighting in tex math snippets
 function! MarkdownPlusMathJax()
     syn region mathblk start=/\v\$\$/ end=/\v\$\$/
     syn region mathinl start=/\v\\\\\(/ end=/\v\\\\\)/
@@ -358,6 +351,21 @@ autocmd BufNewFile,BufReadPost *.md call MarkdownPlusMathJax()
 let g:markdown_fenced_languages = ['html', 'python', 'cpp', 'javascript']
 autocmd Filetype markdown set nofoldenable
 let g:vim_markdown_folding_disabled = 1
+" conceal checkboxes
+if has('conceal')
+  if &termencoding ==# "utf-8" || &encoding ==# "utf-8"
+    let s:checkbox_unchecked = "\uf630"
+    let s:checkbox_lined = "\ufbf0"
+    let s:checkbox_checked = "\uf634"
+  else
+    let s:checkbox_unchecked = 'o'
+    let s:checkbox_checked = 'x'
+  endif
+  syntax match markdownCheckbox "^\s*\([-\*] \[[ -x]\]\|--\|++\) " contains=markdownCheckboxChecked,markdownCheckboxUnchecked,markdownCheckboxLined
+  execute 'syntax match markdownCheckboxUnchecked "\([-\*] \[ \]\|--\)" contained conceal cchar='.s:checkbox_unchecked
+  execute 'syntax match markdownCheckboxLined "\([-\*] \[-\]\|--\)" contained conceal cchar='.s:checkbox_lined
+  execute 'syntax match markdownCheckboxChecked "\([-\*] \[x\]\|++\)" contained conceal cchar='.s:checkbox_checked
+endif
 
 
 "" vim-sneak
@@ -431,14 +439,19 @@ let g:Hexokinase_highlighters = [ 'background' ]
 
 "" asyncrun
 let g:asyncrun_open = 8
+let g:asyncrun_last = 3
+let g:global_cmd = '~/.local/bin/global'
+
 noremap <F9> :call asyncrun#quickfix_toggle(8)<cr>
+
 function! s:Error(msg)
     echohl WarningMsg |
                 \ echomsg 'Error: ' . a:msg |
                 \ echohl None
 endfunction
+
 function! s:RunGlobal(flagstr, termstr)
-    let l:cmdstr = '/usr/bin/global -' . a:flagstr . ' --result=ctags-mod "' . a:termstr . '"'
+    let l:cmdstr = g:global_cmd . a:flagstr . ' --result=ctags-mod "' . a:termstr . '"'
     let l:result = system(l:cmdstr)
     if v:shell_error != 0
         call s:Error('gtags command error.')
@@ -453,8 +466,9 @@ function! s:RunGlobal(flagstr, termstr)
    cexpr! l:result
    let &efm = l:efm_org
 endfunction
+
 function! s:RunGlobalJump(flagstr, termstr)
-    let l:cmdstr = '/usr/bin/global -' . a:flagstr . ' --result=ctags-mod "' . a:termstr . '"'
+    let l:cmdstr = g:global_cmd . a:flagstr . ' --result=ctags-mod "' . a:termstr . '"'
     let l:result = system(l:cmdstr)
     if v:shell_error != 0
         call s:Error('gtags command error.')
@@ -471,37 +485,34 @@ function! s:RunGlobalJump(flagstr, termstr)
    execute ':cc'
    execute ':colder'
 endfunction
+
 function! s:RunGlobalAsync(arg1, ...)
     let l:arg2 = get(a:, 1, 0)
     if l:arg2 != '0'
         let l:flagstr = '-' . a:arg1
         let l:termstr = l:arg2
     else
-        let l:flagstr =  '--from-here="' . line('.') . ':' . expand('%') . '"'
+        let l:getpath = 'realpath --relative-to=' . getcwd() . ' ' . expand('%')
+        let l:relpath = substitute(system(l:getpath), '\n', '', 'g')
+        let l:flagstr =  '--from-here="' . line('.') . ':' . l:relpath . '"'
         let l:termstr = a:arg1
     endif
     let l:efm_org = &efm
     let &efm = "%f\t%l\t%m"
-    execute ':AsyncRun -strip /usr/bin/global ' . l:flagstr . ' --result=ctags-mod "' . l:termstr . '"'
+    l:flagstr .= ' --path-style abslib --result=ctags-mod'
+    execute ':AsyncRun -strip '
+          \ . g:global_cmd . ' '
+          \ . l:flagstr . ' "'
+          \ . l:termstr . '"'
     let &efm = l:efm_org
+    let l:title = 'global ' . l:flagstr . ' ' . expand(l:termstr)
+    call setqflist([], ' ', {'title':l:title})
 endfunction
+
 command! -nargs=*   Gtags       call s:RunGlobalAsync(<f-args>)
 command! -nargs=*   GtagsJump   call s:RunGlobalJump(<f-args>)
 nnoremap <expr>     <c-]>       ':GtagsJump d '.expand('<cword>').'<cr>'
 inoremap <expr>     <c-]>       '<esc>:GtagsJump d '.expand('<cword>').'<cr>i'
-
-if has('conceal')
-  if &termencoding ==# "utf-8" || &encoding ==# "utf-8"
-    let s:checkbox_unchecked = "\u2717"
-    let s:checkbox_checked = "\u2713"
-  else
-    let s:checkbox_unchecked = 'o'
-    let s:checkbox_checked = 'x'
-  endif
-  syntax match markdownCheckbox "^\s*\([-\*] \[[ x]\]\|--\|++\) " contains=markdownCheckboxChecked,markdownCheckboxUnchecked
-  execute 'syntax match markdownCheckboxUnchecked "\([-\*] \[ \]\|--\)" contained conceal cchar='.s:checkbox_unchecked
-  execute 'syntax match markdownCheckboxChecked "\([-\*] \[x\]\|++\)" contained conceal cchar='.s:checkbox_checked
-endif
 
 
 "" fzf
@@ -526,4 +537,4 @@ let g:fzf_colors =
 
 set exrc
 set secure
-
+silent! set cryptmethod=blowfish2
