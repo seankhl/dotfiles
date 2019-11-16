@@ -3,6 +3,10 @@
 "  source /etc/vim/vimrc
 "endif
 
+
+"" basic vim stuff for a more usable environment
+set nocompatible
+set fileformat=unix
 set encoding=utf-8
 scriptencoding utf-8
 
@@ -91,12 +95,6 @@ else
   let &t_SR = "\<Esc>[4 q"
   let &t_EI = "\<Esc>[1 q"
 endif
-
-
-"" basic vim stuff for a more usable environment
-set nocompatible
-set fileformat=unix
-silent! set cryptmethod=blowfish2
 
 
 "" some visual settings for tweaking different parts of the UI
@@ -194,6 +192,13 @@ while c <= 'z'
   exec "imap \e".c." <A-".c.">"
   let c = nr2char(1+char2nr(c))
 endw
+" enable bracketed paste for st and tmux
+if &term =~ '^st' || &term =~ '^tmux'
+  let &t_BE="\<Esc>[?2004h"
+  let &t_BD="\<Esc>[?2004l"
+  let &t_PS="\<Esc>[200~"
+  let &t_PE="\<Esc>[201~"
+endif
 
 
 "" indentation and syntax settings
@@ -337,7 +342,7 @@ imap <silent><expr> <C-\>t
 "let $GTAGSLABEL='pygments'
 
 
-"" markdown stuff
+"" markdown
 " syntax highlighting for MathJax... may work with updated ftplugin, so disabled for now
 " function! MarkdownPlusMathJax()
 "     syn region mathblk start=/\v\$\$/ end=/\v\$\$/
@@ -366,6 +371,21 @@ set formatlistpat+=[\\]:.)}                " .  Closing punctuation
 set formatlistpat+=]                       " End class
 set formatlistpat+=\\s\\+                  " One or more spaces
 set formatlistpat+=\\\|^\\s*[*+-.•—]\\s\\+ " Or bullet points
+" conceal checkboxes
+if has('conceal')
+  if &termencoding ==# "utf-8" || &encoding ==# "utf-8"
+    let s:checkbox_unchecked = "\uf630"
+    let s:checkbox_lined = "\ufbf0"
+    let s:checkbox_checked = "\uf634"
+  else
+    let s:checkbox_unchecked = 'o'
+    let s:checkbox_checked = 'x'
+  endif
+  syntax match markdownCheckbox "^\s*\([-\*] \[[ -x]\]\|--\|++\) " contains=markdownCheckboxChecked,markdownCheckboxUnchecked,markdownCheckboxLined
+  execute 'syntax match markdownCheckboxUnchecked "\([-\*] \[ \]\|--\)" contained conceal cchar='.s:checkbox_unchecked
+  execute 'syntax match markdownCheckboxLined "\([-\*] \[-\]\|--\)" contained conceal cchar='.s:checkbox_lined
+  execute 'syntax match markdownCheckboxChecked "\([-\*] \[x\]\|++\)" contained conceal cchar='.s:checkbox_checked
+endif
 
 
 "" vim-sneak
@@ -447,14 +467,19 @@ let g:Hexokinase_highlighters = [ 'background' ]
 
 "" asyncrun
 let g:asyncrun_open = 8
+let g:asyncrun_last = 3
+let g:global_cmd = '~/.local/bin/global'
+
 noremap <F9> :call asyncrun#quickfix_toggle(8)<cr>
+
 function! s:Error(msg)
     echohl WarningMsg |
                 \ echomsg 'Error: ' . a:msg |
                 \ echohl None
 endfunction
+
 function! s:RunGlobal(flagstr, termstr)
-    let l:cmdstr = '~/.local/bin/global -' . a:flagstr . ' --result=ctags-mod "' . a:termstr . '"'
+    let l:cmdstr = g:global_cmd . a:flagstr . ' --result=ctags-mod "' . a:termstr . '"'
     let l:result = system(l:cmdstr)
     if v:shell_error != 0
         call s:Error('gtags command error.')
@@ -469,11 +494,13 @@ function! s:RunGlobal(flagstr, termstr)
    cexpr! l:result
    let &efm = l:efm_org
 endfunction
+
 function! s:RunGlobalJump(flagstr, termstr)
-    let l:cmdstr = '~/.local/bin/global '
-          \ . '-' . a:flagstr
+    let l:cmdstr = g:global_cmd
+          \ . ' -' . a:flagstr
           \ . ' --nearness="' . expand("%:p") . '"'
-          \ . ' --result=ctags-mod "' . a:termstr . '"'
+          \ . ' --result=ctags-mod "'
+          \ . a:termstr . '"'
     let l:result = system(l:cmdstr)
     if v:shell_error != 0
         call s:Error('gtags command error.')
@@ -490,19 +517,24 @@ function! s:RunGlobalJump(flagstr, termstr)
    execute ':cc'
    execute ':colder'
 endfunction
+
 function! s:RunGlobalAsync(arg1, ...)
     let l:arg2 = get(a:, 1, 0)
     if l:arg2 != '0'
         let l:flagstr = '-' . a:arg1
         let l:termstr = l:arg2
     else
-        let l:flagstr =  '--from-here="' . line('.') . ':' . expand('%') . '"'
+        let l:getpath = 'realpath --relative-to=' . getcwd() . ' ' . expand('%')
+        let l:relpath = substitute(system(l:getpath), '\n', '', 'g')
+        let l:flagstr =  '--from-here="' . line('.') . ':' . l:relpath . '"'
         let l:termstr = a:arg1
     endif
-    let l:cmdstr = '~/.local/bin/global '
+    let l:cmdstr = g:global_cmd . ' '
           \ . l:flagstr
+          \ . ' --path-style=abslib' 
           \ . ' --nearness="' . expand("%:p") . '"'
-          \ . ' --result=ctags-mod "' . l:termstr . '"'
+          \ . ' --result=ctags-mod "' 
+          \ . l:termstr . '"'
     if l:flagstr ==# '-f'
         let l:cmdstr .= ' | sort -b -k1,1 -k2n,2'
     endif
@@ -510,24 +542,14 @@ function! s:RunGlobalAsync(arg1, ...)
     let &efm = "%f\t%l\t%m"
     execute ':AsyncRun -strip ' . l:cmdstr
     let &efm = l:efm_org
+    let l:title = 'global ' . l:flagstr . ' ' . expand(l:termstr)
+    call setqflist([], ' ', {'title':l:title})
 endfunction
+
 command! -nargs=*   Gtags       call s:RunGlobalAsync(<f-args>)
 command! -nargs=*   GtagsJump   call s:RunGlobalJump(<f-args>)
 nnoremap <expr>     <c-]>       ':GtagsJump d '.expand('<cword>').'<cr>zt'
 inoremap <expr>     <c-]>       '<esc>:GtagsJump d '.expand('<cword>').'<cr>zti'
-
-if has('conceal')
-  if &termencoding ==# "utf-8" || &encoding ==# "utf-8"
-    let s:checkbox_unchecked = "\u2717"
-    let s:checkbox_checked = "\u2713"
-  else
-    let s:checkbox_unchecked = 'o'
-    let s:checkbox_checked = 'x'
-  endif
-  syntax match markdownCheckbox "^\s*\([-\*] \[[ x]\]\|--\|++\) " contains=markdownCheckboxChecked,markdownCheckboxUnchecked
-  execute 'syntax match markdownCheckboxUnchecked "\([-\*] \[ \]\|--\)" contained conceal cchar='.s:checkbox_unchecked
-  execute 'syntax match markdownCheckboxChecked "\([-\*] \[x\]\|++\)" contained conceal cchar='.s:checkbox_checked
-endif
 
 
 "" fzf
@@ -613,4 +635,4 @@ set switchbuf=useopen
 
 set exrc
 set secure
-
+silent! set cryptmethod=blowfish2
