@@ -21,25 +21,25 @@ if empty(glob('~/.vim/autoload/plug.vim'))
 endif
 call plug#begin('~/.vim/plugged')
 " completion
-Plug 'ncm2/ncm2'
-Plug 'roxma/nvim-yarp'
-Plug 'roxma/vim-hug-neovim-rpc'
-Plug 'ncm2/ncm2-gtags'
-Plug 'ncm2/ncm2-path'
+"Plug 'ncm2/ncm2'
+"Plug 'roxma/nvim-yarp'
+"Plug 'roxma/vim-hug-neovim-rpc'
+"Plug 'ncm2/ncm2-gtags'
+"Plug 'ncm2/ncm2-path'
 " languages
-Plug 'lervag/vimtex', {'for': 'tex'}
+Plug 'lervag/vimtex',                 {'for': 'tex'}
 Plug 'KeitaNakamura/tex-conceal.vim', {'for': 'tex'}
-Plug 'tpope/vim-markdown', {'as': 'markdown.vim'}
-Plug 'plasticboy/vim-markdown', {'for': 'markdown'}
+Plug 'tpope/vim-markdown',            {'as': 'markdown.vim'}
+Plug 'plasticboy/vim-markdown',       {'for': 'markdown'}
 Plug 'Vimjas/vim-python-pep8-indent', {'for': 'python'}
-Plug 'chrisbra/csv.vim', {'for': 'csv'}
+Plug 'chrisbra/csv.vim',              {'for': 'csv'}
 " junegunn
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/vim-easy-align'      " align text by character
 Plug 'junegunn/goyo.vim'            " distraction-free editing
 Plug 'junegunn/limelight.vim'       " distraction-free editing
 " movement, syntax, other niceties
-"Plug 'mhinz/vim-signify'                                  " git diff
+Plug 'mhinz/vim-signify'                                  " git diff
 Plug 'justinmk/vim-sneak'                                 " 2-letter movement
 Plug 'tpope/vim-obsession'                                " session management
 Plug 'tpope/vim-sleuth'                                   " auto tab settings
@@ -47,11 +47,13 @@ Plug 'tpope/vim-commentary'                               " comment text object
 Plug 'michaeljsmith/vim-indent-object'                    " ai, ii, aI, iI
 Plug 'pgdouyon/vim-evanesco'                              " search tweaks
 Plug 'chrisbra/Recover.vim'                               " recovery tweaks ([D])
-Plug 'mtth/scratch.vim'                                   " scratch files
+"Plug 'mtth/scratch.vim'                                  " scratch files
+Plug 'psliwka/vim-smoothie'                               " try smooth scrolling
 Plug 'moll/vim-bbye'                                      " Bdelete & Bwipeout
 Plug 'RRethy/vim-hexokinase', { 'do': 'make hexokinase' } " color display
-Plug 'romainl/vim-devdocs'
+Plug 'romainl/vim-devdocs'                                " open documentation
 Plug 'skywind3000/asyncrun.vim'                           " async exec of cmds
+Plug 'liuchengxu/vim-clap'                                " fzf in popup
 call plug#end()
 
 
@@ -76,14 +78,14 @@ augroup HiCustom
         \ hi Comment cterm=italic
 augroup END
 " nofrils options
-let g:nofrils_strbackgrounds=1
-let g:nofrils_heavycomments=1
-let g:nofrils_heavylinenumbers=0
+let g:nofrils_strbackgrounds = 1
+let g:nofrils_heavycomments = 1
+let g:nofrils_heavylinenumbers = 0
 let is_daytime = system('is_daytime')
 if v:shell_error
-    colorscheme nofrils-day
-else
     colorscheme nofrils-night
+else
+    colorscheme nofrils-day
 endif
 " cursors
 if exists('$TMUX')
@@ -145,8 +147,8 @@ set mouse=a
 set ttymouse=sgr
 set backspace=indent,eol,start
 set linebreak
-set breakat="	 "
-let mapleader = ";"
+let &breakat = ' 	'
+let mapleader = ' '
 set scrolloff=2
 set textwidth=100
 set timeoutlen=500
@@ -186,7 +188,7 @@ if has('patch-7.3.541')
 endif
 set nojoinspaces
 " fix meta keybindings
-let c='a'
+let c = 'a'
 while c <= 'z'
   exec "set <A-".c.">=\e".c
   exec "imap \e".c." <A-".c.">"
@@ -194,10 +196,10 @@ while c <= 'z'
 endw
 " enable bracketed paste for st and tmux
 if &term =~ '^st' || &term =~ '^tmux'
-  let &t_BE="\<Esc>[?2004h"
-  let &t_BD="\<Esc>[?2004l"
-  let &t_PS="\<Esc>[200~"
-  let &t_PE="\<Esc>[201~"
+  let &t_BE = "\<Esc>[?2004h"
+  let &t_BD = "\<Esc>[?2004l"
+  let &t_PS = "\<Esc>[200~"
+  let &t_PE = "\<Esc>[201~"
 endif
 
 
@@ -218,14 +220,17 @@ set cinoptions=+0,(0,N-s,g0,:0,l1,L0
 
 
 "" default tab settings, overridden by plugin to try to autodetect
-set expandtab
-set tabstop=4
-set softtabstop=4
-set shiftwidth=4
-" override some tab settings for specific tiletypes
-autocmd FileType html,css,javascript setlocal ts=2 sts=2 sw=2
-autocmd FileType go setlocal noet ci pi ts=8 sts=0 sw=8
-autocmd BufNewFile,BufReadPost *.mksh set filetype=sh
+if get(g:, '_has_set_default_indent_settings', 0) == 0
+  " override some tab settings for specific tiletypes
+  autocmd FileType html,css,javascript setlocal ts=2 sts=2 sw=2
+  autocmd FileType go setlocal noet ci pi ts=8 sts=0 sw=8
+  autocmd BufNewFile,BufReadPost *.mksh set filetype=sh
+  set expandtab
+  set tabstop=4
+  set softtabstop=4
+  set shiftwidth=4
+  let g:_has_set_default_indent_settings = 1
+endif
 
 
 "" search settings; these are configured by vim-evanesco I think (enabled)
@@ -296,20 +301,20 @@ nnoremap <silent> gpi :<c-u>call <SID>go_indent(v:count1, -1)<cr>
 
 "" use ctrl-j and ctrl-k to move screen up/down while keeping cursor fixed
 fun! ShiftScreen(dir)
-    let curline=line('.')
+    let curline = line('.')
     exec 'normal! M'
-    let midline=line('.')
-    let shiftlines=float2nr(curline-midline)
-    if shiftlines<0
-        let mot='k'
-        let shiftlines=-shiftlines
-    elseif shiftlines>0
-        let mot='j'
+    let midline = line('.')
+    let shiftlines = float2nr(curline-midline)
+    if shiftlines < 0
+        let mot = 'k'
+        let shiftlines = -shiftlines
+    elseif shiftlines > 0
+        let mot = 'j'
     else
-        let mot=''
+        let mot = ''
     endif
-    if has('float') && type(shiftlines)==type(0.0)
-        let shiftlines=float2nr(shiftlines)
+    if has('float') && type(shiftlines) == type(0.0)
+        let shiftlines = float2nr(shiftlines)
     endif
     exec 'normal! '.a:dir.'zz'.shiftlines.mot
 endfun
@@ -338,8 +343,8 @@ let g:ncm2#auto_popup = 0
 imap <silent><expr> <C-\>t
             \ pumvisible() ?  "\<C-n>" : "\<Plug>(ncm2_manual_trigger)"
 "autocmd FileType c,cpp nnoremap <buffer> gd :<c-u>call ncm2_pyclang#goto_declaration()<cr>
-"let $GTAGSCONF='/home/sean/.local/share/gtags/gtags.conf'
-"let $GTAGSLABEL='pygments'
+"let $GTAGSCONF = '/home/sean/.local/share/gtags/gtags.conf'
+"let $GTAGSLABEL = 'pygments'
 
 
 "" markdown
@@ -416,6 +421,9 @@ autocmd ColorScheme * hi SneakLabel cterm=bold guifg=#302087 guibg=#FFFFFF
 
 "" Goyo
 function! s:goyo_enter()
+  set textwidth=0
+  nnoremap gq J
+  xnoremap gq J
   if exists('$TMUX')
     silent !tmux set status off
   endif
@@ -425,6 +433,9 @@ function! s:goyo_leave()
   if exists('$TMUX')
     silent !tmux set status on
   endif
+  nunmap gq
+  xunmap gq
+  set textwidth=100
   Limelight!
 endfunction
 autocmd! User GoyoEnter nested call <SID>goyo_enter()
@@ -434,9 +445,9 @@ let g:limelight_conceal_ctermfg = '00'
 
 "" vimtex
 let g:vimtex_compiler_latexmk = {'callback' : 0}
-let g:vimtex_quickfix_mode=0
+let g:vimtex_quickfix_mode = 0
 set conceallevel=2
-let g:tex_conceal='abdgm'
+let g:tex_conceal = 'abdgm'
 
 
 "" csv
@@ -449,8 +460,9 @@ hi link CSVColumnHeaderOdd  PreProc
 
 
 "" signify
-let g:signify_vcs_list = [ 'git' ]
+let g:signify_skip = {'vcs': { 'allow': ['git', 'yadm'] }}
 let g:signify_disable_by_default = 1
+"autocmd User SignifySetup autocmd! signify CursorHold,CursorHoldI
 
 
 "" hexokinase
@@ -469,6 +481,7 @@ let g:Hexokinase_highlighters = [ 'background' ]
 let g:asyncrun_open = 8
 let g:asyncrun_last = 3
 let g:global_cmd = '~/.local/bin/global'
+let g:flake8_cmd = 'flake8'
 
 noremap <F9> :call asyncrun#quickfix_toggle(8)<cr>
 
@@ -518,6 +531,29 @@ function! s:RunGlobalJump(flagstr, termstr)
    execute ':colder'
 endfunction
 
+function! s:RunFlake8Async(...)
+    let l:arg1 = get(a:, 1, 0)
+    let l:arg2 = get(a:, 2, 0)
+    if l:arg1 == '0'
+        let l:flagstr = '--select F'
+        let l:pathstr = getcwd()
+    elseif l:arg2 == '0'
+        let l:flagstr = '--select F'
+        let l:pathstr = l:arg1
+    else
+        let l:flagstr = '--select ' . l:arg1
+        let l:pathstr = l:arg2
+    endif
+    let l:getpath = 'realpath --relative-to=' . getcwd() . ' ' . l:pathstr
+    let l:relpath = substitute(system(l:getpath), '\n', '', 'g')
+    let l:cmdstr = g:flake8_cmd . ' '
+          \ . l:flagstr . ' "'
+          \ . l:relpath . '"'
+    execute ':AsyncRun -strip ' . l:cmdstr
+    let l:title = 'flake8 ' . l:flagstr . ' ' . expand(l:relpath)
+    call setqflist([], ' ', {'title':l:title})
+endfunction
+
 function! s:RunGlobalAsync(arg1, ...)
     let l:arg2 = get(a:, 1, 0)
     if l:arg2 != '0'
@@ -531,9 +567,9 @@ function! s:RunGlobalAsync(arg1, ...)
     endif
     let l:cmdstr = g:global_cmd . ' '
           \ . l:flagstr
-          \ . ' --path-style=abslib' 
+          \ . ' --path-style=abslib'
           \ . ' --nearness="' . expand("%:p") . '"'
-          \ . ' --result=ctags-mod "' 
+          \ . ' --result=ctags-mod "'
           \ . l:termstr . '"'
     if l:flagstr ==# '-f'
         let l:cmdstr .= ' | sort -b -k1,1 -k2n,2'
@@ -550,6 +586,8 @@ command! -nargs=*   Gtags       call s:RunGlobalAsync(<f-args>)
 command! -nargs=*   GtagsJump   call s:RunGlobalJump(<f-args>)
 nnoremap <expr>     <c-]>       ':GtagsJump d '.expand('<cword>').'<cr>zt'
 inoremap <expr>     <c-]>       '<esc>:GtagsJump d '.expand('<cword>').'<cr>zti'
+
+command! -nargs=* -complete=file Flake8 call s:RunFlake8Async(<f-args>)
 
 
 "" fzf
@@ -570,9 +608,9 @@ let g:fzf_colors =
 
 
 function! OpenInBuf(arg1, ...)
-  if &filetype != "vim"
-    let l:keywordprg=&keywordprg
-    let l:keywordprgstr=fnameescape(&keywordprg)
+  if &filetype != 'vim'
+    let l:keywordprg = &keywordprg
+    let l:keywordprgstr = fnameescape(&keywordprg)
     if bufloaded(l:keywordprg)
       let l:buf_is_new = 0
       let l:bufmap = map(range(1, winnr('$')), '[bufname(winbufnr(v:val)), v:val]')

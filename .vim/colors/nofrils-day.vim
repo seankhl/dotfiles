@@ -50,7 +50,7 @@ let s:guiforeg = "#000000"
 let s:guigrey1 = "#585858"
 let s:guigrey2 = "#D8DCE8"
 
-let s:guifaded = "#A8AFB8"
+let s:guifaded = "#687088"
 let s:guibrite = "#004A5F"
 
 let s:guishade = "#302087"
@@ -59,6 +59,9 @@ let s:guihlite = "#BFFFAF"
 let s:guialert = "#9FFFEF"
 let s:guiwarng = "#DA5F00"
 let s:guierror = "#FF8787"
+
+" Unused alternates
+let s:guifaded = "#A8AFB8"
 
 " Baseline
 call s:higui("Normal", s:guiforeg, s:guibackg, "NONE")
@@ -84,6 +87,8 @@ call s:higui("CursorColumn", "NONE", s:guigrey2, "NONE")
 call s:higui("CursorIM",     s:guiforeg, s:guialert, "NONE")
 call s:higui("CursorLineNr", "NONE", s:guibackg, "NONE")
 call s:higui("CursorLine",   "NONE", s:guigrey2, "NONE")
+call s:higui("QuickFixLine", "NONE", s:guigrey2, "NONE")
+call s:higui("qfFileName",   "#583820", "NONE", "NONE")
 call s:higui("Cursor",       s:guiforeg, s:guialert, "NONE")
 call s:higui("Directory",    "#5F005F", "NONE", "NONE")
 call s:higui("ErrorMsg",     s:guierror, s:guiforeg, "bold")
@@ -211,6 +216,9 @@ function! NofrilsNormal()
         call s:higui("LineNr", s:guibrite, "NONE", "NONE")
     end
 endfunction
+
+" Language-specific
+call s:higui("pythonDocstring", s:guifaded, "NONE", "italic")
 
 " Command mappings
 command! NofrilsDark :colo nofrils-dark
